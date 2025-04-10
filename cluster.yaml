@@ -1,0 +1,55 @@
+kind: Cluster
+apiVersion: kind.x-k8s.io/v1alpha4
+name: "depressed-uncle"
+# configure cluster with containerd registry config dir enabled
+networking:
+  # WARNING: It is _strongly_ recommended that you keep this the default
+  # (127.0.0.1) for security reasons. However it is possible to change this.
+  apiServerAddress: "127.0.0.1"
+  # By default the API server listens on a random open port.
+  # You may choose a specific port but probably don't need to in most cases.
+  # Using a random port makes it easier to spin up multiple clusters.
+  apiServerPort: 6443
+containerdConfigPatches:
+- |-
+  [plugins."io.containerd.grpc.v1.cri".registry]
+    config_path = "/etc/containerd/certs.d"
+nodes:
+# control plane node
+# this comes with taint so that control-plane node will not accept any other pods by default
+- role: control-plane
+
+# worker nodes
+# worker for ingress controller, that expose http and https ports so we need to taint it to prevent unexpected schedule
+- role: worker
+  labels:
+    roles: ingress
+  extraPortMappings:
+  - containerPort: 80
+    hostPort: 80
+    protocol: TCP
+  - containerPort: 443
+    hostPort: 443
+    protocol: TCP
+  kubeadmConfigPatches:
+    - |
+      kind: JoinConfiguration
+      nodeRegistration:
+        kubeletExtraArgs:
+          register-with-taints: "ingress=true:NoSchedule"    
+# workers with node label role=infra
+# pods with nodeSelectors role=infra will schedule here
+- role: worker
+  labels:
+    role: infra
+- role: worker
+  labels:
+    role: infra    
+# workers with node label role=app
+# pods with nodeSelectors role=app will schedule here
+- role: worker
+  labels:
+    role: app
+- role: worker
+  labels:
+    role: app
