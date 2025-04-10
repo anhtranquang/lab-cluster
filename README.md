@@ -1,6 +1,6 @@
 # Kind Cluster Setup with Nginx Ingress and Argo CD
 
-This repository provides scripts and manifests to quickly set up a local Kubernetes cluster using [Kind](https://kind.sigs.k8s.io/docs/user/quick-start/) with [Nginx Ingress Controller](https://kubernetes.github.io/ingress-nginx/) and [Argo CD](https://argo-cd.readthedocs.io/).
+This repository provides a `Makefile` to quickly set up a local Kubernetes cluster using [Kind](https://kind.sigs.k8s.io/docs/user/quick-start/) with [Nginx Ingress Controller](https://kubernetes.github.io/ingress-nginx/) and [Argo CD](https://argo-cd.readthedocs.io/).
 
 ## Prerequisites
 
@@ -11,10 +11,11 @@ Before you begin, ensure you have the following tools installed on your system:
 * **Kind:** Kubernetes IN Docker. Install it following the [official quick start guide](https://kind.sigs.k8s.io/docs/user/quick-start/).
 * **Helm:** A package manager for Kubernetes, used to install Argo CD. Installation instructions can be found [here](https://helm.sh/docs/intro/install/).
 * **(Optional) kubens:** A handy tool to easily switch between Kubernetes namespaces. You can find the installation instructions [here](https://github.com/ahmetb/kubectx).
+* **make:** A build automation tool. It's likely already installed on most Linux and macOS systems.
 
-## Getting Started
+## Getting Started with Makefile
 
-Follow these steps to create your Kind cluster and install the necessary components:
+This repository simplifies the setup process using a `Makefile`. Follow these steps:
 
 1.  **Clone the Repository:**
     ```bash
@@ -30,61 +31,42 @@ Follow these steps to create your Kind cluster and install the necessary compone
     ```
     This ensures that when you navigate to `http://argocd.local` in your browser, the request is routed to your local machine where the Ingress Controller will be running.
 
-3.  **Create the Kind Cluster:**
+3.  **Create and Deploy the Cluster and Components:**
+    Run the following command to create the Kind cluster and deploy Nginx Ingress Controller and Argo CD:
     ```bash
-    kind create cluster --config cluster.yaml --name lab
+    make build deploy
     ```
-    This command uses the `cluster.yaml` configuration file in this repository to define your Kind cluster named `lab`.
+    This single command will:
+    * Create a Kind cluster named `lab` using the `cluster.yaml` configuration.
+    * Deploy the Nginx Ingress Controller.
+    * Install Argo CD using Helm.
+    * Apply the Ingress resource for Argo CD.
 
-    **`cluster.yaml` Description:**
-    This file configures a Kind cluster with:
-    * A single control plane node.
-    * Multiple worker nodes, including a dedicated worker labeled for `ingress` with host port mappings for HTTP (80) and HTTPS (443), and a taint to dedicate it for Ingress Controller pods.
-    * Additional worker nodes labeled for `infra` and `app` to demonstrate node affinity for different types of workloads.
-
-4.  **Install Nginx Ingress Controller:**
-    This step deploys the Nginx Ingress Controller to the `ingress-nginx` namespace on your cluster.
+4.  **Login to Argo CD:**
+    After the `make deploy` command completes, you can retrieve the initial administrator password using the following command:
     ```bash
-    kubectl apply -f bootstrap-manifests/deploy-ingress-nginx.yaml
+    make argocd-password
     ```
-    Verify that the Nginx Ingress Controller pod is running:
-    ```bash
-    kubectl get pod -n ingress-nginx
-    ```
-    You should see at least one pod in a `Running` state.
-
-5.  **Install Argo CD:**
-    We will use Helm to install Argo CD into its own namespace.
-    ```bash
-    helm repo add argo [https://argoproj.github.io/argo-helm](https://argoproj.github.io/argo-helm)
-    helm repo update
-    helm install argocd . --namespace argocd --create-namespace --wait
-    ```
-    * `helm repo add argo https://argoproj.github.io/argo-helm`: Adds the Argo CD Helm chart repository.
-    * `helm repo update`: Updates the list of available charts from the added repositories.
-    * `helm install argocd . --namespace argocd --create-namespace --wait`: Installs the Argo CD chart into the `argocd` namespace, creating the namespace if it doesn't exist, and waits for the installation to complete.
-
-6.  **Apply Ingress for Argo CD:**
-    This step configures an Ingress resource to expose the Argo CD UI. **Ensure the `host` value in `bootstrap-manifests/argocd-ingress.yaml` matches the hostname you configured in your `/etc/hosts` file (e.g., `argocd.local`).**
-    ```bash
-    kubectl apply -f bootstrap-manifests/argocd-ingress.yaml -n argocd
-    ```
-
-7.  **Login to Argo CD:**
-    To access the Argo CD UI, you'll need the initial administrator password. Retrieve it using the following command:
-    ```bash
-    kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d
-    ```
-    This command fetches the secret, extracts the password (which is base64 encoded), and decodes it.
+    This will execute the necessary `kubectl` command and print the decoded password.
 
     You can then access the Argo CD UI by navigating to the hostname you configured in your `/etc/hosts` file (e.g., `http://argocd.local`). The username is `admin` and the password is the one you retrieved.
 
+## Makefile Targets
+
+Here's a breakdown of the available `make` commands:
+
+* **`make build`**: Creates the Kind cluster named `lab` using the `cluster.yaml` configuration.
+* **`make deploy`**: Deploys the Nginx Ingress Controller and Argo CD to the created Kind cluster. This target depends on the `build` target, so it will create the cluster if it doesn't exist.
+* **`make argocd-password`**: Retrieves and decodes the initial Argo CD administrator password.
+* **`make clean`**: Deletes the Kind cluster named `lab`.
+
 ## Repository Contents
 
-* `cluster.yaml`: (Optional) Configuration file for creating the Kind cluster.
+* `cluster.yaml`: Configuration file for creating the Kind cluster with a control plane and labeled worker nodes (including a dedicated ingress worker).
 * `bootstrap-manifests/`: Directory containing Kubernetes manifests for bootstrapping the cluster.
     * `deploy-ingress-nginx.yaml`: Manifest to deploy the Nginx Ingress Controller.
-    * `argocd-ingress.yaml`: Manifest to create an Ingress resource for Argo CD.
+    * `argocd-ingress.yaml`: Manifest to create an Ingress resource for Argo CD. **Make sure to check and adjust the `host` value in this file to match your `/etc/hosts` configuration.**
+* `Makefile`: Automates the cluster creation and component deployment process.
 
 ## Next Steps
 
@@ -92,11 +74,11 @@ After successfully setting up your Kind cluster with Nginx Ingress and Argo CD, 
 
 * **Deploy Applications with Argo CD:** Learn how to define and deploy applications using GitOps principles with Argo CD. Refer to the [Argo CD documentation](https://argo-cd.readthedocs.io/).
 * **Configure Ingress Rules:** Define Ingress rules to expose your applications running within the cluster through the Nginx Ingress Controller. See the [Kubernetes Ingress documentation](https://kubernetes.io/docs/concepts/services-networking/ingress/).
-* **Explore Kind Configuration:** Customize your Kind cluster by modifying the `cluster.yaml` file. Check the [Kind configuration documentation](https://kind.sigs.k8s.io/docs/config/).
+* **Explore Kind Configuration:** Customize your Kind cluster further by modifying the `cluster.yaml` file. Check the [Kind configuration documentation](https://kind.sigs.k8s.io/docs/config/).
 
 ## Cleanup
 
 To delete the Kind cluster when you are finished:
 
 ```bash
-kind delete cluster --name lab
+make clean
