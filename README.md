@@ -23,7 +23,14 @@ Follow these steps to create your Kind cluster and install the necessary compone
     ```
     *(Replace `https://github.com/anhtranquang/lab-cluster` and `<lab-cluster` with the actual repository URL and directory name)*
 
-2.  **Create the Kind Cluster:**
+2.  **Configure Hostname (for local access):**
+    Before creating the cluster, if you intend to access Argo CD via a specific hostname (as defined in `bootstrap-manifests/argocd-ingress.yaml`), you need to configure your local machine's `/etc/hosts` file (or the equivalent for your operating system). Add an entry mapping the desired hostname to `127.0.0.1`. For example, if your `argocd-ingress.yaml` uses `argocd.local`, add the following line to your `/etc/hosts` file:
+    ```
+    127.0.0.1 argocd.local
+    ```
+    This ensures that when you navigate to `http://argocd.local` in your browser, the request is routed to your local machine where the Ingress Controller will be running.
+
+3.  **Create the Kind Cluster:**
     ```bash
     kind create cluster --config cluster.yaml --name lab
     ```
@@ -35,7 +42,7 @@ Follow these steps to create your Kind cluster and install the necessary compone
     * Multiple worker nodes, including a dedicated worker labeled for `ingress` with host port mappings for HTTP (80) and HTTPS (443), and a taint to dedicate it for Ingress Controller pods.
     * Additional worker nodes labeled for `infra` and `app` to demonstrate node affinity for different types of workloads.
 
-3.  **Install Nginx Ingress Controller:**
+4.  **Install Nginx Ingress Controller:**
     This step deploys the Nginx Ingress Controller to the `ingress-nginx` namespace on your cluster.
     ```bash
     kubectl apply -f bootstrap-manifests/deploy-ingress-nginx.yaml
@@ -46,32 +53,31 @@ Follow these steps to create your Kind cluster and install the necessary compone
     ```
     You should see at least one pod in a `Running` state.
 
-4.  **Install Argo CD:**
+5.  **Install Argo CD:**
     We will use Helm to install Argo CD into its own namespace.
     ```bash
     helm repo add argo [https://argoproj.github.io/argo-helm](https://argoproj.github.io/argo-helm)
     helm repo update
-    helm install argocd charts/argo-cd --namespace argocd --create-namespace --wait
+    helm install argocd . --namespace argocd --create-namespace --wait
     ```
     * `helm repo add argo https://argoproj.github.io/argo-helm`: Adds the Argo CD Helm chart repository.
     * `helm repo update`: Updates the list of available charts from the added repositories.
-    * `helm install argocd charts/argo-cd --namespace argocd --create-namespace --wait`: Installs the Argo CD chart into the `argocd` namespace, creating the namespace if it doesn't exist, and waits for the installation to complete.
+    * `helm install argocd . --namespace argocd --create-namespace --wait`: Installs the Argo CD chart into the `argocd` namespace, creating the namespace if it doesn't exist, and waits for the installation to complete.
 
-5.  **Apply Ingress for Argo CD:**
-    This step configures an Ingress resource to expose the Argo CD UI.
+6.  **Apply Ingress for Argo CD:**
+    This step configures an Ingress resource to expose the Argo CD UI. **Ensure the `host` value in `bootstrap-manifests/argocd-ingress.yaml` matches the hostname you configured in your `/etc/hosts` file (e.g., `argocd.local`).**
     ```bash
     kubectl apply -f bootstrap-manifests/argocd-ingress.yaml -n argocd
     ```
-    *Note: Ensure your `bootstrap-manifests/argocd-ingress.yaml` is configured correctly for your environment, especially the `host` value.*
 
-6.  **Login to Argo CD:**
+7.  **Login to Argo CD:**
     To access the Argo CD UI, you'll need the initial administrator password. Retrieve it using the following command:
     ```bash
     kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d
     ```
     This command fetches the secret, extracts the password (which is base64 encoded), and decodes it.
 
-    You can then access the Argo CD UI through the hostname specified in your `bootstrap-manifests/argocd-ingress.yaml` file (e.g., `argocd.example.com` if that's what you configured). The username is `admin` and the password is the one you retrieved.
+    You can then access the Argo CD UI by navigating to the hostname you configured in your `/etc/hosts` file (e.g., `http://argocd.local`). The username is `admin` and the password is the one you retrieved.
 
 ## Repository Contents
 
