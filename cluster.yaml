@@ -1,52 +1,75 @@
 kind: Cluster
 apiVersion: kind.x-k8s.io/v1alpha4
-name: "depressed-uncle"
-# configure cluster with containerd registry config dir enabled
+name: "depressed-uncle" # A unique name for your Kind cluster.
+
 networking:
-  # WARNING: It is _strongly_ recommended that you keep this the default
-  # (127.0.0.1) for security reasons. However it is possible to change this.
+  # Configure network settings for the cluster.
   apiServerAddress: "127.0.0.1"
-  # By default the API server listens on a random open port.
-  # You may choose a specific port but probably don't need to in most cases.
-  # Using a random port makes it easier to spin up multiple clusters.
+  # The IP address the Kubernetes API server will listen on.
+  # It's strongly recommended to keep this as the default (localhost) for security.
   apiServerPort: 6443
+  # The port the Kubernetes API server will listen on.
+  # Leaving it commented out or setting it to 0 will result in a random open port.
+  # Specifying a port can be useful for consistent access but might cause conflicts
+  # if you run multiple Kind clusters simultaneously.
+
 containerdConfigPatches:
+  # Patches to apply to the containerd configuration on each node.
+  # This example enables the containerd registry configuration directory,
+  # which allows you to configure private registries.
 - |-
   [plugins."io.containerd.grpc.v1.cri".registry]
     config_path = "/etc/containerd/certs.d"
-nodes:
-# control plane node
-# this comes with taint so that control-plane node will not accept any other pods by default
-- role: control-plane
 
-# worker nodes
-# worker for ingress controller, that expose http and https ports so we need to taint it to prevent unexpected schedule
+nodes:
+  # Define the nodes that will be part of your Kubernetes cluster.
+
+  # Control Plane Node:
+  # This node acts as the control plane for your Kubernetes cluster.
+  # It runs components like the API server, scheduler, and controller manager.
+- role: control-plane
+  # The 'control-plane' role automatically applies a taint
+  # (node-role.kubernetes.io/control-plane:NoSchedule)
+  # which prevents regular workloads from being scheduled on it by default.
+
+  # Worker Node for Ingress Controller:
+  # This worker node is specifically intended for the Nginx Ingress Controller.
+  # We expose host ports 80 and 443 to allow external traffic to reach the Ingress.
+  # We also apply a taint to prevent other workloads from being scheduled here.
 - role: worker
   labels:
-    roles: ingress
+    roles: ingress # Add a label to easily identify this node.
   extraPortMappings:
   - containerPort: 80
     hostPort: 80
-    protocol: TCP
+    protocol: TCP # Expose host port 80 to the container's port 80 (HTTP).
   - containerPort: 443
     hostPort: 443
-    protocol: TCP
+    protocol: TCP # Expose host port 443 to the container's port 443 (HTTPS).
   kubeadmConfigPatches:
+    # Apply kubeadm configuration patches specifically to this node during join.
     - |
       kind: JoinConfiguration
       nodeRegistration:
         kubeletExtraArgs:
-          register-with-taints: "ingress=true:NoSchedule"    
-# workers with node label role=infra
-# pods with nodeSelectors role=infra will schedule here
+          register-with-taints: "ingress=true:NoSchedule"
+          # Apply a taint to this node. Only pods with a matching toleration
+          # (e.g., tolerations: - key: "ingress", operator: "Equal", value: "true", effect: "NoSchedule")
+          # will be able to be scheduled on this node. This helps dedicate it to Ingress.
+
+  # Infrastructure Worker Nodes:
+  # These worker nodes are labeled for infrastructure-related pods.
+  # Pods with the nodeSelector 'role: infra' will be scheduled on these nodes.
 - role: worker
   labels:
     role: infra
 - role: worker
   labels:
-    role: infra    
-# workers with node label role=app
-# pods with nodeSelectors role=app will schedule here
+    role: infra
+
+  # Application Worker Nodes:
+  # These worker nodes are labeled for application-related pods.
+  # Pods with the nodeSelector 'role: app' will be scheduled on these nodes.
 - role: worker
   labels:
     role: app

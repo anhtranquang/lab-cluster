@@ -18,16 +18,22 @@ Follow these steps to create your Kind cluster and install the necessary compone
 
 1.  **Clone the Repository:**
     ```bash
-    git clone <YOUR_REPOSITORY_URL>
-    cd <YOUR_REPOSITORY_DIRECTORY>
+    git clone https://github.com/anhtranquang/lab-cluster
+    cd lab-cluster
     ```
-    *(Replace `<YOUR_REPOSITORY_URL>` and `<YOUR_REPOSITORY_DIRECTORY>` with the actual repository URL and directory name)*
+    *(Replace `https://github.com/anhtranquang/lab-cluster` and `<lab-cluster` with the actual repository URL and directory name)*
 
 2.  **Create the Kind Cluster:**
     ```bash
     kind create cluster --config cluster.yaml --name lab
     ```
-    This command uses the `cluster.yaml` configuration file (if present) to define your Kind cluster and names it `lab`.
+    This command uses the `cluster.yaml` configuration file in this repository to define your Kind cluster named `lab`.
+
+    **`cluster.yaml` Description:**
+    This file configures a Kind cluster with:
+    * A single control plane node.
+    * Multiple worker nodes, including a dedicated worker labeled for `ingress` with host port mappings for HTTP (80) and HTTPS (443), and a taint to dedicate it for Ingress Controller pods.
+    * Additional worker nodes labeled for `infra` and `app` to demonstrate node affinity for different types of workloads.
 
 3.  **Install Nginx Ingress Controller:**
     This step deploys the Nginx Ingress Controller to the `ingress-nginx` namespace on your cluster.
