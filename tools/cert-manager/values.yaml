@@ -33,7 +33,6 @@ cert-manager:
                 operator: Exists
 
   webhook:
-    enabled: true
     replicaCount: 1
     resources:
       requests:
