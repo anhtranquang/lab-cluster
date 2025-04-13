@@ -112,7 +112,7 @@ kubernetes-dashboard:
             - path: /
               pathType: ImplementationSpecific
       tls: [] # Remove HTTPS configuration
-      ingressClassName: internal-nginx
+      ingressClassName: nginx
       # Use only if your ingress controllers support default ingress classes.
       # If set to true ingressClassName will be ignored and not added to the Ingress resources.
       # It should fall back to using IngressClass marked as the default.
@@ -149,8 +149,10 @@ kubernetes-dashboard:
         requiredDuringSchedulingIgnoredDuringExecution:
           nodeSelectorTerms:
             - matchExpressions:
-                - key: node-role.kubernetes.io/infra
-                  operator: Exists
+                - key: role
+                  operator: In
+                  values:
+                    - infra
 
   # WEB UI deployment configuration
   web:
