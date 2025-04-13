@@ -1,0 +1,28 @@
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: tools-applicationset
+  namespace: argocd
+spec:
+  generators:
+    - git: # Use the git generator
+        repoURL: 'https://github.com/anhtranquang/lab-cluster' # Replace with your repo URL
+        revision: main
+        directories:
+          - path: tools/* # Automatically detects subdirectories in tools
+  template:
+    metadata:
+      name: '{{path.basename}}'
+    spec:
+      project: default
+      source:
+        repoURL: 'https://github.com/anhtranquang/lab-cluster' # Replace with your repo URL
+        targetRevision: main
+        path: 'tools/{{path.basename}}'
+      destination:
+        server: 'https://kubernetes.default.svc'
+        namespace: 'tools' # Fixed namespace for all applications
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true

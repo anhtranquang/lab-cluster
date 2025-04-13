@@ -1,0 +1,18 @@
+argo-cd:
+  configs:
+    credentialTemplates:
+      https-creds:
+        url: https://github.com/anhtranquang
+        password: "{{ .Values.argo-cd.configs.credentialTemplates.https-creds.password }}"
+        username: anhtranquang
+  redis-ha:
+    enabled: false
+  dex:
+    enabled: false
+  notifications:
+    enabled: false
+  applicationSet:
+    enabled: false
+  server:
+    extraArgs:
+      - --insecure
