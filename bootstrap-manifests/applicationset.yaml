@@ -21,10 +21,10 @@ spec:
         path: 'tools/{{path.basename}}'
       destination:
         server: 'https://kubernetes.default.svc'
-        namespace: 'tools' # Fixed namespace for all applications
+        namespace: '{{path.basename}}' # Dynamically set namespace to basename
       syncPolicy:
         automated:
           prune: true
           selfHeal: true
         syncOptions:
-          - CreateNamespace=true 
+          - CreateNamespace=true
