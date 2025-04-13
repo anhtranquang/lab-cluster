@@ -1,6 +1,9 @@
 apiVersion: v2
-name: k8s-dashboard
-description: A Helm chart for Kubernetes Dashboard
+name: kubernetes-dashboard
+version: 7.11.1
+description: General-purpose web UI for Kubernetes clusters
 type: application
-version: 1.0.0
-appVersion: "latest"
+dependencies:
+  - name: kubernetes-dashboard
+    version: 7.11.1
+    repository: https://github.com/kubernetes/dashboard
