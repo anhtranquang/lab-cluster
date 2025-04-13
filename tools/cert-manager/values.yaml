@@ -1,5 +1,4 @@
 cert-manager:
-  enabled: true
   global:
     leaderElection:
       namespace: cert-manager
