@@ -149,7 +149,7 @@ kubernetes-dashboard:
         requiredDuringSchedulingIgnoredDuringExecution:
           nodeSelectorTerms:
             - matchExpressions:
-                - key: node-role.kubernetes.io/tools
+                - key: node-role.kubernetes.io/infra
                   operator: Exists
 
   # WEB UI deployment configuration
