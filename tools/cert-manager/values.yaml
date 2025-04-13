@@ -29,8 +29,10 @@ cert-manager:
       requiredDuringSchedulingIgnoredDuringExecution:
         nodeSelectorTerms:
           - matchExpressions:
-              - key: node-role.kubernetes.io/infra
-                operator: Exists
+              - key: role
+                operator: In
+                values:
+                  - infra
 
   webhook:
     replicaCount: 1
