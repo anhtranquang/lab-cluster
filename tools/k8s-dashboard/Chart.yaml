@@ -3,7 +3,3 @@ name: kubernetes-dashboard
 version: 7.11.1
 description: General-purpose web UI for Kubernetes clusters
 type: application
-dependencies:
-  - name: kubernetes-dashboard
-    version: 7.11.1
-    repository: https://kubernetes.github.io/dashboard/
