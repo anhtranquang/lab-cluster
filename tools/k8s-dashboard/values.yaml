@@ -1,4 +1,4 @@
-  # Copyright 2017 The Kubernetes Authors.
+# Copyright 2017 The Kubernetes Authors.
   #
   # Licensed under the Apache License, Version 2.0 (the "License");
   # you may not use this file except in compliance with the License.
@@ -107,10 +107,7 @@ kubernetes-dashboard:
         kubernetes.io/ingress.class: "nginx"
         nginx.ingress.kubernetes.io/rewrite-target: /
       hosts:
-        - host: dashboard.localhost
-          paths:
-            - path: /
-              pathType: ImplementationSpecific
+        - "dashboard.localhost"
       tls: [] # Remove HTTPS configuration
       ingressClassName: nginx
       # Use only if your ingress controllers support default ingress classes.
