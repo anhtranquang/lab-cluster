@@ -4,7 +4,7 @@ metadata:
   name: argocd-ingress
 spec:
   rules:
-  - host: "argocd.local"
+  - host: "argocd.localhost"
     http:
         paths:
         - path: /
