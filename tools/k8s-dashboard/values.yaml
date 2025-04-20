@@ -241,7 +241,7 @@ kubernetes-dashboard:
     proxy:
       type: ClusterIP
       http:
-        enabled: false
+        enabled: true
 
   ## Optional Cert Manager sub-chart configuration
   ## Enable this if you don't already have cert-manager enabled on your cluster.
