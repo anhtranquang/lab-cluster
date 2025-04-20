@@ -107,7 +107,7 @@ kubernetes-dashboard:
         kubernetes.io/ingress.class: "nginx"
         nginx.ingress.kubernetes.io/rewrite-target: /
       hosts:
-        - host: dashboard.local
+        - host: dashboard.localhost
           paths:
             - path: /
               pathType: ImplementationSpecific
