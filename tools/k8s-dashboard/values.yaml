@@ -242,6 +242,8 @@ kubernetes-dashboard:
       type: ClusterIP
       http:
         enabled: true
+      tls:
+        enabled: false
 
   ## Optional Cert Manager sub-chart configuration
   ## Enable this if you don't already have cert-manager enabled on your cluster.
