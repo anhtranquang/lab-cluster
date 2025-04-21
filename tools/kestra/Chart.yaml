@@ -1,0 +1,10 @@
+apiVersion: v2
+name: kestra-deployment
+description: A Helm chart for deploying Kestra.io on Kubernetes via ArgoCD
+type: application
+version: 0.1.0
+appVersion: "0.18.0"
+dependencies:
+  - name: kestra
+    version: "0.18.0"
+    repository: "https://helm.kestra.io/"

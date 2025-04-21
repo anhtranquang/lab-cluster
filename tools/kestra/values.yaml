@@ -1,0 +1,104 @@
+kestra:
+  # Kestra server configuration
+  deployments:
+    standalone:
+      enabled: true
+    webserver:
+      enabled: false
+    executor:
+      enabled: false
+    indexer:
+      enabled: false
+    scheduler:
+      enabled: false
+    worker:
+      enabled: false
+
+  # Resource limits and requests
+  resources:
+    limits:
+      cpu: "1"
+      memory: "2Gi"
+    requests:
+      cpu: "500m"
+      memory: "1Gi"
+
+  # Security context for Kestra pods
+  securityContext:
+    runAsUser: 1000
+    runAsGroup: 1000
+
+  # Kestra configuration via ConfigMap
+  configuration:
+    kestra:
+      queue:
+        type: postgres
+      storage:
+        type: minio
+
+# PostgreSQL configuration (enabled by default)
+postgresql:
+  enabled: true
+  auth:
+    database: kestra
+    username: kestra
+    password: kestra
+  resources:
+    requests:
+      memory: "512Mi"
+      cpu: "250m"
+    limits:
+      memory: "1Gi"
+      cpu: "500m"
+
+# MinIO configuration (enabled by default)
+minio:
+  enabled: true
+  auth:
+    rootUser: please-change-me
+    rootPassword: its-not-a-secret
+  defaultBuckets: kestra
+  resources:
+    requests:
+      memory: "512Mi"
+      cpu: "250m"
+    limits:
+      memory: "1Gi"
+      cpu: "500m"
+
+# Disable Kafka and Elasticsearch for simplicity
+kafka:
+  enabled: false
+elasticsearch:
+  enabled: false
+
+# Docker-in-Docker (DinD) configuration
+dind:
+  enabled: true
+  image:
+    image: docker
+    tag: dind-rootless
+    pullPolicy: IfNotPresent
+  securityContext:
+    runAsUser: 1000
+    runAsGroup: 1000
+  resources:
+    requests:
+      memory: "512Mi"
+      cpu: "250m"
+    limits:
+      memory: "1Gi"
+      cpu: "500m"
+  args:
+    - --log-level=fatal
+    - --group=1000
+
+# Pod security and termination
+terminationGracePeriodSeconds: 30
+podSecurityContext:
+  fsGroup: 2000
+
+# Node selector, tolerations, and affinity (customize as needed)
+nodeSelector: {}
+tolerations: []
+affinity: {}
