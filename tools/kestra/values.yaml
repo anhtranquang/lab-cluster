@@ -27,6 +27,22 @@ kestra:
   securityContext:
     runAsUser: 1000
     runAsGroup: 1000
+    
+  # Ingress configuration
+  ingress:
+    enabled: true
+    className: nginx
+    annotations: {}
+    hosts:
+      - host: kestra.localhost
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: kestra-standalone
+                port:
+                  number: 8080
 
   # Kestra configuration via ConfigMap
   configuration:
