@@ -4,6 +4,13 @@ This repository provides a `Makefile` to quickly set up a local Kubernetes clust
 
 ## Prerequisites
 
+Ensure you have the following tools installed:
+
+- **Docker**: Required for running Kind clusters.
+- **kubectl**: Kubernetes command-line tool.
+- **Helm**: Kubernetes package manager.
+- **Kind**: Tool for running local Kubernetes clusters.
+
 Before you begin, ensure you have the following tools installed on your system:
 
 * **Docker:** Kind requires Docker to run Kubernetes nodes as containers. Follow the installation instructions [here](https://docs.docker.com/get-docker/).
@@ -22,9 +29,14 @@ This repository simplifies the setup process using a `Makefile`. Follow these st
     git clone https://github.com/anhtranquang/lab-cluster
     cd lab-cluster
     ```
-    *(Replace `https://github.com/anhtranquang/lab-cluster` and `<lab-cluster` with the actual repository URL and directory name)*
 
-2.  **Create and Deploy the Cluster and Components:**
+2.  **Set Up Git Credentials:**
+    Ensure you have the following information ready:
+    - Git repository URL (e.g., `https://github.com/your-repo.git`)
+    - Git username
+    - Git API key
+
+3.  **Create and Deploy the Cluster and Components:**
     Run the following command to create the Kind cluster and deploy Nginx Ingress Controller and Argo CD:
     ```bash
     make build deploy
@@ -35,14 +47,12 @@ This repository simplifies the setup process using a `Makefile`. Follow these st
     * Install Argo CD using Helm.
     * Apply the Ingress resource for Argo CD.
 
-3.  **Login to Argo CD:**
+4.  **Login to Argo CD:**
     After the `make deploy` command completes, you can retrieve the initial administrator password using the following command:
     ```bash
     make argocd-password
     ```
     This will execute the necessary `kubectl` command and print the decoded password.
-
-    You can then access the Argo CD UI by navigating to `http://argocd.localhost` in your browser. The username is `admin` and the password is the one you retrieved.
 
 ## Makefile Targets
 
@@ -57,9 +67,13 @@ Here's a breakdown of the available `make` commands:
 
 * `cluster.yaml`: Configuration file for creating the Kind cluster with a control plane and labeled worker nodes (including a dedicated ingress worker).
 * `bootstrap-manifests/`: Directory containing Kubernetes manifests for bootstrapping the cluster.
-    * `deploy-ingress-nginx.yaml`: Manifest to deploy the Nginx Ingress Controller.
-    * `argocd-ingress.yaml`: Manifest to create an Ingress resource for Argo CD. **The `host` value in this file is set to `argocd.localhost`, which resolves automatically to `127.0.0.1`.**
-* `Makefile`: Automates the cluster creation and component deployment process.
+  * `deploy-ingress-nginx.yaml`: Manifest to deploy the Nginx Ingress Controller.
+  * `argocd-ingress.yaml`: Manifest to create an Ingress resource for Argo CD. **The `host` value in this file is set to `argocd.localhost`, which resolves automatically to `127.0.0.1`.**
+  * `applicationset.yaml`: Defines an ArgoCD ApplicationSet for managing multiple applications.
+* `tools/`: Directory containing Helm values and configurations for additional tools.
+  * `kestra/values.yaml`: Helm values file for deploying Kestra.
+* `Makefile`: Automates the cluster creation, tool deployment, and cleanup processes.
+* `README.md`: Documentation for setting up and managing the lab cluster.
 
 ## Next Steps
 

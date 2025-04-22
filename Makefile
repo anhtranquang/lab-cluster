@@ -5,7 +5,7 @@ INGRESS_MANIFEST := $(BOOTSTRAP_MANIFESTS)/deploy-ingress-nginx.yaml
 ARGOCD_INGRESS_MANIFEST := $(BOOTSTRAP_MANIFESTS)/argocd-ingress.yaml
 ARGOCD_NAMESPACE := argocd
 
-.PHONY: build deploy clean argocd-password
+.PHONY: build deploy clean argocd-password deploy-applicationset
 
 build: kind-cluster
 
@@ -14,7 +14,7 @@ kind-cluster:
 	kind create cluster --config "$(CONFIG_FILE)" --name "$(KIND_CLUSTER_NAME)"
 	@echo "Kind cluster '${KIND_CLUSTER_NAME}' created."
 
-deploy: deploy-ingress deploy-argocd
+deploy: deploy-ingress deploy-argocd deploy-applicationset
 
 deploy-ingress:
 	@echo "Applying Nginx Ingress Controller..."
@@ -40,6 +40,11 @@ deploy-argocd:
 	kubectl apply -f "$(ARGOCD_INGRESS_MANIFEST)" -n "$(ARGOCD_NAMESPACE)"
 	@echo "Argo CD deployed. You can retrieve the initial admin password with:"
 	@echo "make argocd-password"
+
+deploy-applicationset:
+	@echo "Applying ArgoCD ApplicationSet..."
+	kubectl apply -f bootstrap-manifests/applicationset.yaml
+	@echo "ApplicationSet applied successfully."
 
 argocd-password:
 	@echo "Retrieving Argo CD initial admin password..."
