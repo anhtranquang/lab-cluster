@@ -1,100 +1,109 @@
-# Values for the Kubernetes Dashboard Helm chart
-app:
-  mode: dashboard
-  scheduling:
-    affinity:
-      nodeAffinity:
-        requiredDuringSchedulingIgnoredDuringExecution:
-          nodeSelectorTerms:
-            - matchExpressions:
-                - key: role
-                  operator: In
-                  values:
-                    - infra
-  ingress:
+  # Values for the Kubernetes Dashboard Helm chart
+kubernetes-dashboard:
+  app:
+    mode: dashboard
+    scheduling:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                  - key: role
+                    operator: In
+                    values:
+                      - infra
+    ingress:
+      enabled: true
+      ingressClassName: nginx
+      hosts:
+        - dashboard.localhost
+      pathType: Prefix
+      path: /
+      annotations:
+        nginx.ingress.kubernetes.io/backend-protocol: "HTTP"
+        nginx.ingress.kubernetes.io/ssl-redirect: "false"
+        nginx.ingress.kubernetes.io/force-ssl-redirect: "false"
+      tls: 
+        enabled: false
+      useDefaultAnnotations: false
+
+  # Web service configuration to ensure HTTP access
+  web:
+    service:
+      type: ClusterIP
+      extraSpec:
+        ports:
+          - name: http
+            port: 80
+            targetPort: 8000
+            protocol: TCP
+    containers:
+      resources:
+        requests:
+          cpu: 100m
+          memory: 200Mi
+        limits:
+          cpu: 250m
+          memory: 400Mi
+
+  # Disable Kong proxy (use NGINX Ingress instead)
+  kong:
     enabled: true
-    ingressClassName: nginx
-    hosts:
-      - dashboard.localhost
-    pathType: Prefix
-    path: /
-    annotations:
-      nginx.ingress.kubernetes.io/backend-protocol: "HTTP"
-      nginx.ingress.kubernetes.io/ssl-redirect: "false"
-      nginx.ingress.kubernetes.io/force-ssl-redirect: "false"
-    tls: []
-    useDefaultAnnotations: false
+    proxy:
+      type: ClusterIP
+      http:
+        enabled: true
+        servicePort: 80
+      tls:
+        enabled: false
+        servicePort: 80
+  # Disable metrics-server sub-chart
+  metrics-server:
+    enabled: false
 
-# Web service configuration to ensure HTTP access
-web:
-  service:
-    type: ClusterIP
-    extraSpec:
-      ports:
-        - name: http
-          port: 80
-          targetPort: 8000
-          protocol: TCP
-  containers:
-    resources:
-      requests:
-        cpu: 100m
-        memory: 200Mi
-      limits:
-        cpu: 250m
-        memory: 400Mi
+  # Disable cert-manager sub-chart
+  cert-manager:
+    enabled: false
 
-# Disable Kong proxy (use NGINX Ingress instead)
-kong:
-  enabled: false
+  # Disable nginx sub-chart (external NGINX Ingress controller is used)
+  nginx:
+    enabled: false
 
-# Disable metrics-server sub-chart
-metrics-server:
-  enabled: false
+  # Metrics Scraper configuration
+  metricsScraper:
+    enabled: true
+    containers:
+      resources:
+        requests:
+          cpu: 100m
+          memory: 200Mi
+        limits:
+          cpu: 250m
+          memory: 400Mi
 
-# Disable cert-manager sub-chart
-cert-manager:
-  enabled: false
+  # RBAC configuration
+  rbac:
+    clusterRoleMetrics: true
+    clusterReadOnlyRole: false
 
-# Disable nginx sub-chart (external NGINX Ingress controller is used)
-nginx:
-  enabled: false
+  # Auth container configuration
+  auth:
+    containers:
+      resources:
+        requests:
+          cpu: 100m
+          memory: 200Mi
+        limits:
+          cpu: 250m
+          memory: 400Mi
 
-# Metrics Scraper configuration
-metricsScraper:
-  enabled: true
-  containers:
-    resources:
-      requests:
-        cpu: 100m
-        memory: 200Mi
-      limits:
-        cpu: 250m
-        memory: 400Mi
-
-# RBAC configuration
-rbac:
-  clusterRoleMetrics: true
-  clusterReadOnlyRole: false
-
-# Auth container configuration
-auth:
-  containers:
-    resources:
-      requests:
-        cpu: 100m
-        memory: 200Mi
-      limits:
-        cpu: 250m
-        memory: 400Mi
-
-# API container configuration
-api:
-  containers:
-    resources:
-      requests:
-        cpu: 100m
-        memory: 200Mi
-      limits:
-        cpu: 250m
-        memory: 400Mi
+  # API container configuration
+  api:
+    containers:
+      resources:
+        requests:
+          cpu: 100m
+          memory: 200Mi
+        limits:
+          cpu: 250m
+          memory: 400Mi
