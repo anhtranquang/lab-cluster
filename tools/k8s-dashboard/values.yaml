@@ -3,7 +3,7 @@ kubernetes-dashboard:
   # Namespace for the dashboard
   namespace: kubernetes-dashboard
 
-  # Enable Ingress for local access
+  # Enable Ingress for local HTTP access
   ingress:
     enabled: true
     ingressClassName: nginx
@@ -13,15 +13,10 @@ kubernetes-dashboard:
           - path: /
             pathType: Prefix
     annotations:
+      nginx.ingress.kubernetes.io/backend-protocol: "HTTP"
+      nginx.ingress.kubernetes.io/ssl-redirect: "false"
       nginx.ingress.kubernetes.io/force-ssl-redirect: "false"
-      nginx.ingress.kubernetes.io/backend-protocol: "HTTPS"
     tls: []
-    # For local testing, TLS is disabled; for production, add cert-manager annotations
-    # cert-manager.io/cluster-issuer: letsencrypt-prod
-    # tls:
-    #   - hosts:
-    #       - dashboard.localhost
-    #     secretName: dashboard-tls
 
   # Node affinity to schedule pods on nodes with role=infra
   affinity:
@@ -37,8 +32,13 @@ kubernetes-dashboard:
   # Service configuration
   service:
     type: ClusterIP
-    port: 443
-    targetPort: 8443
+    port: 80
+    targetPort: 8080
+    annotations:
+      kubernetes-dashboard/port: "8080"
+
+  # Protocol configuration
+  protocolHttp: true
 
   # Disable metrics-server and cert-manager sub-charts for simplicity
   metrics-server:
