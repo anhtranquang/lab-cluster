@@ -1,0 +1,83 @@
+# Values for the Kubernetes Dashboard Helm chart
+kubernetes-dashboard:
+  # Namespace for the dashboard
+  namespace: kubernetes-dashboard
+
+  # Enable Ingress for local access
+  ingress:
+    enabled: true
+    ingressClassName: nginx
+    hosts:
+      - host: dashboard.localhost
+        paths:
+          - path: /
+            pathType: Prefix
+    annotations:
+      nginx.ingress.kubernetes.io/force-ssl-redirect: "false"
+      nginx.ingress.kubernetes.io/backend-protocol: "HTTPS"
+    tls: []
+    # For local testing, TLS is disabled; for production, add cert-manager annotations
+    # cert-manager.io/cluster-issuer: letsencrypt-prod
+    # tls:
+    #   - hosts:
+    #       - dashboard.localhost
+    #     secretName: dashboard-tls
+
+  # Node affinity to schedule pods on nodes with role=infra
+  affinity:
+    nodeAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+        nodeSelectorTerms:
+          - matchExpressions:
+              - key: role
+                operator: In
+                values:
+                  - infra
+
+  # Service configuration
+  service:
+    type: ClusterIP
+    port: 443
+    targetPort: 8443
+
+  # Disable metrics-server and cert-manager sub-charts for simplicity
+  metrics-server:
+    enabled: false
+  cert-manager:
+    enabled: false
+
+  # Disable Kong proxy for simplicity (use NGINX Ingress instead)
+  kong:
+    enabled: false
+
+  # Security settings
+  auth:
+    role: auth
+    containers:
+      resources:
+        requests:
+          cpu: 100m
+          memory: 200Mi
+        limits:
+          cpu: 250m
+          memory: 400Mi
+  api:
+    role: api
+    containers:
+      resources:
+        requests:
+          cpu: 100m
+          memory: 200Mi
+        limits:
+          cpu: 250m
+          memory: 400Mi
+
+  # Enable RBAC
+  rbac:
+    clusterRoleMetrics: true
+    clusterReadOnlyRole: false
+
+  # Tolerations (optional, uncomment if needed for tainted nodes)
+  # tolerations:
+  #   - key: "node-role.kubernetes.io/control-plane"
+  #     effect: "NoSchedule"

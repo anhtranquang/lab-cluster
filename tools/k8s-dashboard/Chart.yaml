@@ -1,0 +1,17 @@
+apiVersion: v2
+name: kubernetes-dashboard
+description: A Helm chart to deploy Kubernetes Dashboard via ArgoCD 
+version: 0.1.0
+appVersion: "7.6.0"
+dependencies:
+  - name: kubernetes-dashboard
+    version: "7.6.0"
+    repository: "https://kubernetes.github.io/dashboard/"
+keywords:
+  - kubernetes
+  - dashboard
+  - ingress
+  - argocd
+annotations:
+  artifacthub.io/changes: |
+    - Initial chart for Kubernetes Dashboard with NGINX Ingress 
